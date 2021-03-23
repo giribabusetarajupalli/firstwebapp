@@ -1,0 +1,66 @@
+# ASP.NET
+# Build and test ASP.NET projects.
+# Add steps that publish symbols, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/apps/aspnet/build-aspnet-4
+
+trigger:
+- master
+stages:
+- Stage: Build
+  jobs:
+  - Job: Build
+    Pool:
+	    vmImage:  'Windows-Latest'
+	  
+	  Variables:
+	    Solution: '**/*,sln'
+	    BuildPlatform: 'Any CPU'
+	    BuildConfiguration: 'Release'
+	  
+	  Steps:
+    - task: NuGetToolInstaller@1
+
+    - task: NuGetCommand@2
+      inputs:
+        restoreSolution: '$(Solution)'
+
+    - task: VSBuild@1
+      inputs:
+        solution: '$(solution)'
+        msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:PackageLocation="$(build.artifactStagingDirectory)"'
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+
+    - task: VSTest@2
+      inputs:
+        platform: '$(buildPlatform)'
+        configuration: '$(buildConfiguration)'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
+
+- Stage: Deploy
+  jobs:
+  - Job: Deploy
+    Pool:
+	    vmImage:  'Windows-Latest'
+    Steps:
+    
+    
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'drop'
+        downloadPath: '$(System.ArtifactsDirectory)'
+    
+    - task: AzureRmWebAppDeployment@4
+      inputs:
+        ConnectionType: 'AzureRM'
+        azureSubscription: 'Free Trial (bb4fb0aa-6f48-4a84-b22a-3d6fe411a253)'
+        appType: 'webApp'
+        WebAppName: 'webapphjkjghjf'
+        packageForLinux: '$(System.DefaultWorkingDirectory)/Drop/*.zip'
