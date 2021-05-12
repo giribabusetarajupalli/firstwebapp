@@ -62,5 +62,5 @@ stages:
         ConnectionType: 'AzureRM'
         azureSubscription: 'Free Trial (bb4fb0aa-6f48-4a84-b22a-3d6fe411a253)'
         appType: 'webApp'
-        WebAppName: 'webapphjkjghjf'
+        WebAppName: 'webapp0sgdhh1'
         packageForLinux: '$(System.DefaultWorkingDirectory)/Drop/*.zip'
